@@ -6,7 +6,7 @@ unset($_SESSION['old_compose']);
 $replyId = filter_input(INPUT_GET, 'reply_to', FILTER_VALIDATE_INT);
 $prefill = [];
 $closePath = 'inbox.php';
-$composeTitle = 'Yeni Mesaj';
+$composeTitle = t('Yeni Mesaj');
 
 if ($replyId) {
     // Yanıt verilecek mesajı her istekte yeniden yetkilendir.
@@ -18,7 +18,7 @@ if ($replyId) {
     ]);
     $replyMessage = $stmt->fetch();
     if (!$replyMessage) {
-        flash('error', 'Yanıtlanacak mesaj bulunamadı veya bu mesaj için yetkiniz yok.');
+        flash('error', t('Yanıtlanacak mesaj bulunamadı veya bu mesaj için yetkiniz yok.'));
         redirect('compose.php');
     }
 
@@ -31,7 +31,7 @@ if ($replyId) {
     $subject = mb_substr($subject, 0, 180, 'UTF-8');
     $prefill = ['recipient' => $recipient, 'subject' => $subject, 'body' => ''];
     $closePath = 'message.php?id=' . $replyId;
-    $composeTitle = 'Yanıtla';
+    $composeTitle = t('Yanıtla');
 }
 
 $values = array_merge($prefill, $old);
@@ -40,14 +40,15 @@ render_app_start($composeTitle, 'compose', $user);
 <section class="compose-card" aria-labelledby="compose-title">
     <header class="compose-header">
         <h1 id="compose-title"><?= e($composeTitle) ?></h1>
-        <a class="icon-button" href="<?= e(url($closePath)) ?>" aria-label="Mesaj yazma ekranını kapat"><?= icon_svg('close') ?></a>
+        <a class="icon-button" href="<?= e(url($closePath)) ?>" aria-label="<?= e(t('Mesaj yazma ekranını kapat')) ?>"><?= icon_svg('close') ?></a>
     </header>
-    <form action="<?= e(url('actions/send_message.php')) ?>" method="post" class="compose-form">
+    <form action="<?= e(url('actions/send_message.php')) ?>" method="post" enctype="multipart/form-data" class="compose-form">
         <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-        <label><span>Alıcı</span><input name="recipient" maxlength="80" value="<?= e($values['recipient'] ?? '') ?>" placeholder="kullanici veya kullanici@mailsystem.local" required autofocus></label>
-        <label><span>Konu</span><input name="subject" maxlength="180" value="<?= e($values['subject'] ?? '') ?>" placeholder="Mesajın konusu" required></label>
-        <label class="compose-body"><span>Mesaj</span><textarea name="body" maxlength="20000" placeholder="Mesajını yaz…" required><?= e($values['body'] ?? '') ?></textarea><small><span data-char-count>0</span> / 20.000</small></label>
-        <div class="compose-actions"><button class="primary-button" type="submit"><span class="button-label">Gönder</span><span class="spinner"></span><?= icon_svg('sent') ?></button><a href="<?= e(url($closePath)) ?>">Vazgeç</a></div>
+        <label><span><?= e(t('Alıcı')) ?></span><input name="recipient" maxlength="80" value="<?= e($values['recipient'] ?? '') ?>" placeholder="<?= e(t('kullanici veya kullanici@mailsystem.local')) ?>" required autofocus></label>
+        <label><span><?= e(t('Konu')) ?></span><input name="subject" maxlength="180" value="<?= e($values['subject'] ?? '') ?>" placeholder="<?= e(t('Mesajın konusu')) ?>" required></label>
+        <label class="compose-body"><span><?= e(t('Mesaj')) ?></span><textarea name="body" maxlength="20000" placeholder="<?= e(t('Mesajını yaz…')) ?>" required><?= e($values['body'] ?? '') ?></textarea><small><span data-char-count>0</span> / 20.000</small></label>
+        <label class="attachment-field"><span><?= e(t('Dosya eki')) ?></span><input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.txt" aria-describedby="attachment-help"><small id="attachment-help"><?= e(t('İsteğe bağlı · PDF, JPG, PNG, TXT · En fazla 2 MB')) ?></small></label>
+        <div class="compose-actions"><button class="primary-button" type="submit"><span class="button-label"><?= e(t('Gönder')) ?></span><span class="spinner"></span><?= icon_svg('sent') ?></button><a href="<?= e(url($closePath)) ?>"><?= e(t('Vazgeç')) ?></a></div>
     </form>
 </section>
 <?php render_app_end(); ?>

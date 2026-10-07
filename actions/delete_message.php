@@ -12,7 +12,7 @@ $stmt->execute(['id' => $id, 'viewer_sender' => $user['id'], 'viewer_recipient' 
 $message = $stmt->fetch();
 if (!$message) {
     http_response_code(403);
-    exit('Bu işlem için yetkiniz yok.');
+    exit(t('Bu işlem için yetkiniz yok.'));
 }
 
 if ((int) $message['recipient_id'] === (int) $user['id']) {
@@ -23,5 +23,5 @@ if ((int) $message['recipient_id'] === (int) $user['id']) {
     $return = 'sent.php';
 }
 $update->execute(['id' => $id, 'viewer' => $user['id']]);
-flash('success', 'Mesaj çöp kutusuna taşındı.');
+flash('success', t('Mesaj çöp kutusuna taşındı.'));
 redirect($return);

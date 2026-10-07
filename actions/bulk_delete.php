@@ -9,7 +9,7 @@ $ids = is_array($rawIds)
     ? array_values(array_unique(array_filter(array_map('intval', $rawIds), static fn(int $id): bool => $id > 0)))
     : [];
 if (!$ids) {
-    flash('error', 'Silmek için en az bir mesaj seçin.');
+    flash('error', t('Silmek için en az bir mesaj seçin.'));
     redirect('inbox.php');
 }
 
@@ -20,7 +20,7 @@ $check->execute($params);
 $authorizedIds = array_column($check->fetchAll(), 'id');
 if (!$authorizedIds) {
     http_response_code(403);
-    exit('Bu mesajları silmek için yetkiniz yok.');
+    exit(t('Bu mesajları silmek için yetkiniz yok.'));
 }
 
 $authorizedPlaceholders = implode(',', array_fill(0, count($authorizedIds), '?'));
@@ -33,5 +33,5 @@ $senderDelete->execute($senderParams);
 
 $returnTo = (string) ($_POST['return_to'] ?? 'inbox.php');
 $allowedReturns = ['inbox.php', 'sent.php', 'starred.php', 'trash.php'];
-flash('success', count($authorizedIds) . ' mesaj çöp kutusuna taşındı.');
+flash('success', t('{count} mesaj çöp kutusuna taşındı.', ['count' => count($authorizedIds)]));
 redirect(in_array($returnTo, $allowedReturns, true) ? $returnTo : 'inbox.php');

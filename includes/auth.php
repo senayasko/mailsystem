@@ -19,7 +19,8 @@ function require_auth(): array
 {
     $user = current_user();
     if ($user === null) {
-        flash('error', 'Devam etmek için giriş yapın.');
+        if (wants_json()) json_response(['error' => t('Oturumun sona erdi. Tekrar giriş yap.')], 401);
+        flash('error', t('Devam etmek için giriş yapın.'));
         redirect('login.php');
     }
     return $user;

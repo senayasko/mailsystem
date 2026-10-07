@@ -41,23 +41,40 @@ function verify_csrf(): void
 {
     $given = $_POST['csrf_token'] ?? '';
     if (!is_string($given) || !hash_equals(csrf_token(), $given)) {
+        if (wants_json()) json_response(['error' => t('İstek doğrulanamadı. Sayfayı yenileyip tekrar deneyin.')], 403);
         http_response_code(403);
-        exit('İstek doğrulanamadı. Sayfayı yenileyip tekrar deneyin.');
+        exit(t('İstek doğrulanamadı. Sayfayı yenileyip tekrar deneyin.'));
     }
 }
 
 function only_post(): void
 {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
         header('Allow: POST');
-        exit('Bu işlem için POST isteği gereklidir.');
+        if (wants_json()) json_response(['error' => t('Bu işlem için POST isteği gereklidir.')], 405);
+        http_response_code(405);
+        exit(t('Bu işlem için POST isteği gereklidir.'));
     }
 }
 
 function initial(string $name): string
 {
     return mb_strtoupper(mb_substr(trim($name), 0, 1, 'UTF-8'), 'UTF-8');
+}
+
+function wants_json(): bool
+{
+    return str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+}
+
+function json_response(array $data, int $status = 200): never
+{
+    http_response_code($status);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: private, no-store');
+    header('X-Content-Type-Options: nosniff');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    exit;
 }
 
 function display_date(string $value): string

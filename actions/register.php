@@ -12,19 +12,19 @@ $repeat = (string) ($_POST['password_repeat'] ?? '');
 $_SESSION['old_register'] = ['first_name' => $first, 'last_name' => $last, 'username' => $username];
 
 if ($first === '' || $last === '' || mb_strlen($first) > 80 || mb_strlen($last) > 80) {
-    flash('error', 'Ad ve soyad 1–80 karakter olmalıdır.');
+    flash('error', t('Ad ve soyad 1–80 karakter olmalıdır.'));
     redirect('register.php');
 }
 if (!preg_match('/^[a-z0-9._-]{3,30}$/D', $username)) {
-    flash('error', 'Kullanıcı adı 3–30 karakter olmalı; yalnızca küçük harf, rakam, nokta, alt çizgi ve tire içermelidir.');
+    flash('error', t('Kullanıcı adı 3–30 karakter olmalı; yalnızca küçük harf, rakam, nokta, alt çizgi ve tire içermelidir.'));
     redirect('register.php');
 }
 if (strlen($password) < 8 || strlen($password) > 72) {
-    flash('error', 'Şifre 8–72 karakter olmalıdır.');
+    flash('error', t('Şifre 8–72 karakter olmalıdır.'));
     redirect('register.php');
 }
 if ($password !== $repeat) {
-    flash('error', 'Şifreler eşleşmiyor.');
+    flash('error', t('Şifreler eşleşmiyor.'));
     redirect('register.php');
 }
 
@@ -39,12 +39,12 @@ try {
     ]);
 } catch (PDOException $exception) {
     if ($exception->getCode() === '23000') {
-        flash('error', 'Bu kullanıcı adı zaten kullanılıyor.');
+        flash('error', t('Bu kullanıcı adı zaten kullanılıyor.'));
         redirect('register.php');
     }
     throw $exception;
 }
 
 unset($_SESSION['old_register']);
-flash('success', 'Hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.');
+flash('success', t('Hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.'));
 redirect('login.php');

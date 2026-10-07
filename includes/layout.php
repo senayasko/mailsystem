@@ -6,7 +6,7 @@ function render_public_start(string $title): void
     $flash = take_flash();
     ?>
     <!doctype html>
-    <html lang="tr">
+    <html lang="<?= e(current_language()) ?>">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,11 +15,13 @@ function render_public_start(string $title): void
         <script defer src="<?= e(url('assets/js/app.js')) ?>"></script>
     </head>
     <body class="auth-body">
+    <?php render_client_translations(); ?>
     <main class="auth-shell">
         <section class="auth-panel">
-            <a class="brand auth-brand" href="<?= e(url()) ?>" aria-label="Posta ana sayfa">
+            <a class="brand auth-brand" href="<?= e(url()) ?>" aria-label="<?= e(t('Posta ana sayfa')) ?>">
                 <span class="brand-mark"><?= icon_svg('mail') ?></span><span>Posta</span>
             </a>
+            <?php render_language_switch(); ?>
             <?php render_flash($flash); ?>
     <?php
 }
@@ -42,7 +44,7 @@ function render_app_start(string $title, string $active, array $user): void
     $unread = unread_count((int) $user['id']);
     ?>
     <!doctype html>
-    <html lang="tr">
+    <html lang="<?= e(current_language()) ?>">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -50,19 +52,20 @@ function render_app_start(string $title, string $active, array $user): void
         <link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>">
         <script defer src="<?= e(url('assets/js/app.js')) ?>"></script>
     </head>
-    <body class="app-body">
+    <body class="app-body" data-status-url="<?= e(url('actions/mailbox_status.php')) ?>">
+    <?php render_client_translations(); ?>
     <div class="app-shell">
-        <aside class="sidebar" id="sidebar" aria-label="Ana menü">
+        <aside class="sidebar" id="sidebar" aria-label="<?= e(t('Ana menü')) ?>">
             <div class="sidebar-header">
                 <a class="brand" href="<?= e(url('inbox.php')) ?>"><span class="brand-mark"><?= icon_svg('mail') ?></span><span>Posta</span></a>
-                <button class="sidebar-close" type="button" data-sidebar-close aria-label="Menüyü kapat"><?= icon_svg('close') ?></button>
+                <button class="sidebar-close" type="button" data-sidebar-close aria-label="<?= e(t('Menüyü kapat')) ?>"><?= icon_svg('close') ?></button>
             </div>
-            <a class="compose-button" href="<?= e(url('compose.php')) ?>"><?= icon_svg('compose') ?><span>Yeni Mesaj</span></a>
-            <nav class="main-nav" aria-label="Posta kutuları">
-                <?php nav_link('inbox.php', 'Gelen Kutusu', 'inbox', $active, 'inbox', $unread ?: null); ?>
-                <?php nav_link('starred.php', 'Yıldızlı', 'starred', $active, 'star'); ?>
-                <?php nav_link('sent.php', 'Gönderilenler', 'sent', $active, 'sent'); ?>
-                <?php nav_link('trash.php', 'Çöp Kutusu', 'trash', $active, 'trash'); ?>
+            <a class="compose-button" href="<?= e(url('compose.php')) ?>"><?= icon_svg('compose') ?><span><?= e(t('Yeni Mesaj')) ?></span></a>
+            <nav class="main-nav" aria-label="<?= e(t('Posta kutuları')) ?>">
+                <?php nav_link('inbox.php', t('Gelen Kutusu'), 'inbox', $active, 'inbox', $unread ?: null); ?>
+                <?php nav_link('starred.php', t('Yıldızlı'), 'starred', $active, 'star'); ?>
+                <?php nav_link('sent.php', t('Gönderilenler'), 'sent', $active, 'sent'); ?>
+                <?php nav_link('trash.php', t('Çöp Kutusu'), 'trash', $active, 'trash'); ?>
             </nav>
             <div class="sidebar-account">
                 <span class="avatar"><?= e(initial($user['first_name'])) ?></span>
@@ -70,17 +73,18 @@ function render_app_start(string $title, string $active, array $user): void
             </div>
             <form action="<?= e(url('actions/logout.php')) ?>" method="post">
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
-                <button class="logout-button" type="submit">Çıkış yap</button>
+                <button class="logout-button" type="submit"><?= e(t('Çıkış yap')) ?></button>
             </form>
         </aside>
         <section class="workspace">
             <header class="topbar">
-                <button class="menu-button" type="button" data-sidebar-toggle aria-label="Menüyü aç"><?= icon_svg('menu') ?></button>
-                <label class="search-box"><span class="sr-only">Mesajlarda ara</span><?= icon_svg('search') ?><input type="search" placeholder="Mesajlarda ara" data-mail-search autocomplete="off"></label>
-                <div class="top-account"><span class="avatar"><?= e(initial($user['first_name'])) ?></span><span><?= e($user['username']) ?></span></div>
+                <button class="menu-button" type="button" data-sidebar-toggle aria-label="<?= e(t('Menüyü aç')) ?>"><?= icon_svg('menu') ?></button>
+                <label class="search-box"><span class="sr-only"><?= e(t('Mesajlarda ara')) ?></span><?= icon_svg('search') ?><input type="search" placeholder="<?= e(t('Mesajlarda ara')) ?>" data-mail-search autocomplete="off"></label>
+                <div class="top-account"><?php render_language_switch(); ?><span class="avatar"><?= e(initial($user['first_name'])) ?></span><span><?= e($user['username']) ?></span></div>
             </header>
             <main class="content">
                 <?php render_flash($flash); ?>
+                <div class="async-notice" data-async-notice role="status" aria-live="polite" hidden></div>
     <?php
 }
 
@@ -93,8 +97,10 @@ function nav_link(string $path, string $label, string $key, string $active, stri
 {
     $class = $key === $active ? 'nav-link active' : 'nav-link';
     $current = $key === $active ? ' aria-current="page"' : '';
-    echo '<a class="' . $class . '" href="' . e(url($path)) . '"' . $current . '><span class="nav-icon">' . icon_svg($icon) . '</span><span>' . e($label) . '</span>';
-    if ($count !== null) {
+    echo '<a class="' . $class . '" href="' . e(url($path)) . '"' . $current . '><span class="nav-icon">' . icon_svg($icon) . '</span><span>' . e(t($label)) . '</span>';
+    if ($key === 'inbox') {
+        echo '<strong class="nav-count" data-unread-count' . ($count ? '' : ' hidden') . '>' . (int) $count . '</strong>';
+    } elseif ($count !== null) {
         echo '<strong class="nav-count">' . $count . '</strong>';
     }
     echo '</a>';
@@ -105,7 +111,7 @@ function render_flash(?array $flash): void
     if (!$flash) {
         return;
     }
-    echo '<div class="alert alert-' . e($flash['type']) . '" role="alert">' . icon_svg($flash['type'] === 'success' ? 'check' : 'info') . '<span>' . e($flash['message']) . '</span></div>';
+    echo '<div class="alert alert-' . e($flash['type']) . '" role="alert">' . icon_svg($flash['type'] === 'success' ? 'check' : 'info') . '<span>' . e(t($flash['message'])) . '</span></div>';
 }
 
 function icon_svg(string $name): string
@@ -135,22 +141,22 @@ function render_mailbox_toolbar(string $title, array $messages, string $path, bo
     ?>
     <div class="mailbox-toolbar">
         <div class="toolbar-selection">
-            <label class="checkbox-control" title="Tümünü seç">
-                <input type="checkbox" data-select-all aria-label="Tüm mesajları seç">
+            <label class="checkbox-control" title="<?= e(t('Tümünü seç')) ?>">
+                <input type="checkbox" data-select-all aria-label="<?= e(t('Tüm mesajları seç')) ?>">
                 <span></span>
             </label>
-            <span class="selection-status" data-selection-status><?= count($messages) ?> mesaj</span>
+            <span class="selection-status" data-selection-status><?= e(t('{count} mesaj', ['count' => count($messages)])) ?></span>
             <form class="bulk-actions" action="<?= e(url('actions/bulk_delete.php')) ?>" method="post" data-bulk-delete-form>
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="return_to" value="<?= e($path) ?>">
-                <button class="toolbar-button bulk-delete" type="submit" data-bulk-delete disabled aria-label="Seçili mesajları sil" title="Seçili mesajları sil"><?= icon_svg('trash') ?></button>
+                <button class="toolbar-button bulk-delete" type="submit" data-bulk-delete disabled aria-label="<?= e(t('Seçili mesajları sil')) ?>" title="<?= e(t('Seçili mesajları sil')) ?>"><?= icon_svg('trash') ?></button>
             </form>
         </div>
         <div class="mailbox-title">
             <h1><?= e($title) ?></h1>
-            <?php if ($showUnread): ?><span><?= $unread ?> okunmamış</span><?php endif; ?>
+            <?php if ($showUnread): ?><span data-unread-label><?= e(t('{count} okunmamış', ['count' => $unread])) ?></span><?php endif; ?>
         </div>
-        <a class="toolbar-button" href="<?= e(url($path)) ?>" aria-label="Mesaj listesini yenile" title="Yenile"><?= icon_svg('refresh') ?></a>
+        <a class="toolbar-button" href="<?= e(url($path)) ?>" aria-label="<?= e(t('Mesaj listesini yenile')) ?>" title="<?= e(t('Yenile')) ?>"><?= icon_svg('refresh') ?></a>
     </div>
     <?php
 }
@@ -164,23 +170,23 @@ function render_message_list(array $messages, string $box): void
             'starred' => ['Yıldızlı mesaj yok', 'Önemli mesajlarını yıldızlayınca burada toplanacak.'],
             'trash' => ['Çöp kutusu boş', 'Sildiğin mesajlar burada görünecek.'],
         ][$box] ?? ['Burada mesaj yok', ''];
-        echo '<div class="empty-state"><span class="empty-icon">' . icon_svg('inbox') . '</span><h2>' . e($empty[0]) . '</h2><p>' . e($empty[1]) . '</p>';
+        echo '<div class="empty-state"><span class="empty-icon">' . icon_svg('inbox') . '</span><h2>' . e(t($empty[0])) . '</h2><p>' . e(t($empty[1])) . '</p>';
         if ($box === 'inbox' || $box === 'sent') {
-            echo '<a href="' . e(url('compose.php')) . '">Yeni mesaj oluştur</a>';
+            echo '<a href="' . e(url('compose.php')) . '">' . e(t('Yeni mesaj oluştur')) . '</a>';
         }
         echo '</div>';
         return;
     }
-    echo '<div class="mail-list" data-mail-list>';
+    echo '<div class="mail-list" data-mail-list data-box="' . e($box) . '">';
     foreach ($messages as $message) {
         $unreadClass = !$message['is_read'] && in_array($box, ['inbox', 'starred'], true) ? ' unread' : '';
         $showRecipient = $box === 'sent' || ($box === 'trash' && (int) $message['sender_id'] === (int) (current_user()['id'] ?? 0));
         $person = $showRecipient ? $message['recipient_name'] : $message['sender_name'];
         $address = $showRecipient ? $message['recipient_email'] : $message['sender_email'];
         echo '<div class="mail-row' . $unreadClass . '" data-mail-item data-search-text="' . e(mb_strtolower($person . ' ' . $address . ' ' . $message['subject'] . ' ' . $message['body'])) . '">';
-        echo '<label class="checkbox-control row-checkbox"><input type="checkbox" data-row-select data-message-id="' . (int) $message['id'] . '" value="' . (int) $message['id'] . '" aria-label="Mesajı seç"><span></span></label>';
+        echo '<label class="checkbox-control row-checkbox"><input type="checkbox" data-row-select data-message-id="' . (int) $message['id'] . '" value="' . (int) $message['id'] . '" aria-label="' . e(t('Mesajı seç')) . '"><span></span></label>';
         if (in_array($box, ['inbox', 'starred'], true)) {
-            echo '<form class="row-star" action="' . e(url('actions/toggle_star.php')) . '" method="post"><input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '"><input type="hidden" name="message_id" value="' . (int) $message['id'] . '"><input type="hidden" name="return_to" value="' . e($box . '.php') . '"><button class="star-button' . ($message['is_starred'] ? ' is-starred' : '') . '" type="submit" aria-label="' . ($message['is_starred'] ? 'Yıldızı kaldır' : 'Yıldızla') . '">' . icon_svg('star') . '</button></form>';
+            echo '<form class="row-star" data-star-form action="' . e(url('actions/toggle_star.php')) . '" method="post"><input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '"><input type="hidden" name="message_id" value="' . (int) $message['id'] . '"><input type="hidden" name="return_to" value="' . e($box . '.php') . '"><button class="star-button' . ($message['is_starred'] ? ' is-starred' : '') . '" type="submit" aria-pressed="' . ($message['is_starred'] ? 'true' : 'false') . '" aria-label="' . e(t($message['is_starred'] ? 'Yıldızı kaldır' : 'Yıldızla')) . '">' . icon_svg('star') . '</button></form>';
         } else {
             echo '<span class="row-star-placeholder">' . icon_svg('star') . '</span>';
         }
@@ -191,5 +197,5 @@ function render_message_list(array $messages, string $box): void
         echo '<time datetime="' . e($message['created_at']) . '">' . e(display_date($message['created_at'])) . '</time>';
         echo '</a></div>';
     }
-    echo '<div class="search-empty" data-search-empty hidden>Aramana uyan mesaj bulunamadı.</div></div>';
+    echo '<div class="search-empty" data-search-empty hidden>' . e(t('Aramana uyan mesaj bulunamadı.')) . '</div></div>';
 }

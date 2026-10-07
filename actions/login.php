@@ -7,7 +7,7 @@ require_guest();
 $identity = mb_strtolower(trim((string) ($_POST['identity'] ?? '')), 'UTF-8');
 $password = (string) ($_POST['password'] ?? '');
 if ($identity === '' || strlen($identity) > 80 || $password === '') {
-    flash('error', 'Kullanıcı adınızı ve şifrenizi girin.');
+    flash('error', t('Kullanıcı adınızı ve şifrenizi girin.'));
     redirect('login.php');
 }
 
@@ -15,7 +15,7 @@ $stmt = db()->prepare('SELECT id, password_hash FROM users WHERE username = :use
 $stmt->execute(['username' => $identity, 'email' => $identity]);
 $user = $stmt->fetch();
 if (!$user || !password_verify($password, $user['password_hash'])) {
-    flash('error', 'Kullanıcı adı veya şifre hatalı.');
+    flash('error', t('Kullanıcı adı veya şifre hatalı.'));
     redirect('login.php');
 }
 
