@@ -12,12 +12,16 @@ if (basename($directory) === 'actions') {
 define('BASE_URL', rtrim($directory, '/') === '' ? '' : rtrim($directory, '/'));
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    if (uses_postgres()) {
+        require_once __DIR__ . '/database_session.php';
+        session_set_save_handler(new DatabaseSession(), true);
+    }
     session_name('mailsystem_session');
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => BASE_URL === '' ? '/' : BASE_URL . '/',
         'httponly' => true,
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'secure' => getenv('VERCEL') || (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
         'samesite' => 'Lax',
     ]);
     ini_set('session.use_strict_mode', '1');

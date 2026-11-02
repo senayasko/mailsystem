@@ -13,7 +13,13 @@ if (!$attachment || !preg_match('/^[a-f0-9]{48}\.bin$/D', $attachment['stored_na
     exit(t('Dosya bulunamadı veya indirme yetkin yok.'));
 }
 $path = attachment_directory() . '/' . $attachment['stored_name'];
-$handle = @fopen($path, 'rb');
+if (uses_postgres()) {
+    $bytes = base64_decode($attachment['content_base64'], true);
+    $handle = $bytes === false ? false : fopen('php://temp', 'w+b');
+    if ($handle) { fwrite($handle, $bytes); rewind($handle); }
+} else {
+    $handle = @fopen($path, 'rb');
+}
 if (!$handle) {
     http_response_code(404);
     exit(t('Dosya bulunamadı.'));
@@ -23,7 +29,7 @@ header('Content-Type: application/octet-stream');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: private, no-store');
 header('Content-Disposition: attachment; filename="attachment"; filename*=UTF-8\'\'' . rawurlencode($attachment['original_name']));
-header('Content-Length: ' . (string) filesize($path));
+header('Content-Length: ' . (string) $attachment['size_bytes']);
 fpassthru($handle);
 fclose($handle);
 exit;

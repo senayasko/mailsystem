@@ -1,0 +1,9 @@
+.git
+.env*
+.vercel
+storage
+scripts
+tests
+*.md
+*.cmd
+database.sql

@@ -38,7 +38,7 @@ try {
         'hash' => password_hash($password, PASSWORD_DEFAULT),
     ]);
 } catch (PDOException $exception) {
-    if ($exception->getCode() === '23000') {
+    if (in_array($exception->getCode(), ['23000', '23505'], true)) {
         flash('error', t('Bu kullanıcı adı zaten kullanılıyor.'));
         redirect('register.php');
     }

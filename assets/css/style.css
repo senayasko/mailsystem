@@ -148,6 +148,9 @@ input:focus, textarea:focus { border-color: var(--color-accent); box-shadow: 0 0
 .mail-row.selected { background: #e8edf4; }
 .row-checkbox { justify-self: center; width: 30px; }
 .row-star { margin: 0; display: grid; place-items: center; }
+.restore-button { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-text-muted); }
+.restore-button:hover, .bulk-restore:not(:disabled):hover { color: var(--color-accent); background: var(--color-surface-muted); }
+.restore-button .icon { width: 18px; height: 18px; }
 .star-button { display: grid; place-items: center; border: 0; border-radius: var(--radius-sm); color: #9aa1ac; background: transparent; width: 30px; height: 30px; }
 .star-button:hover { color: var(--color-star); background: #fff8e6; }
 .star-button.is-starred { color: var(--color-star); }

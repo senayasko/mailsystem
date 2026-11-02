@@ -8,7 +8,7 @@ if (!$id) {
     if (wants_json()) json_response(['error' => t('Mesaj bulunamadı.')], 422);
     redirect('inbox.php');
 }
-$stmt = db()->prepare('UPDATE messages SET is_starred = NOT is_starred WHERE id=:id AND recipient_id=:recipient');
+$stmt = db()->prepare('UPDATE messages SET is_starred = 1 - is_starred WHERE id=:id AND recipient_id=:recipient');
 $stmt->execute(['id' => $id, 'recipient' => $user['id']]);
 if ($stmt->rowCount() === 0) {
     if (wants_json()) json_response(['error' => t('Bu işlem için yetkiniz yok.')], 403);

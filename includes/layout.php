@@ -11,7 +11,7 @@ function render_public_start(string $title): void
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?= e($title) ?> · Posta</title>
-        <link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>">
+        <link rel="stylesheet" href="<?= e(url('assets/css/style.css?v=' . filemtime(__DIR__ . '/../assets/css/style.css'))) ?>">
         <script defer src="<?= e(url('assets/js/app.js')) ?>"></script>
     </head>
     <body class="auth-body">
@@ -49,7 +49,7 @@ function render_app_start(string $title, string $active, array $user): void
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?= e($title) ?> · Posta</title>
-        <link rel="stylesheet" href="<?= e(url('assets/css/style.css')) ?>">
+        <link rel="stylesheet" href="<?= e(url('assets/css/style.css?v=' . filemtime(__DIR__ . '/../assets/css/style.css'))) ?>">
         <script defer src="<?= e(url('assets/js/app.js')) ?>"></script>
     </head>
     <body class="app-body" data-status-url="<?= e(url('actions/mailbox_status.php')) ?>">
@@ -146,10 +146,10 @@ function render_mailbox_toolbar(string $title, array $messages, string $path, bo
                 <span></span>
             </label>
             <span class="selection-status" data-selection-status><?= e(t('{count} mesaj', ['count' => count($messages)])) ?></span>
-            <form class="bulk-actions" action="<?= e(url('actions/bulk_delete.php')) ?>" method="post" data-bulk-delete-form>
+            <form class="bulk-actions" action="<?= e(url($path === 'trash.php' ? 'actions/restore_message.php' : 'actions/bulk_delete.php')) ?>" method="post" data-bulk-delete-form>
                 <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="return_to" value="<?= e($path) ?>">
-                <button class="toolbar-button bulk-delete" type="submit" data-bulk-delete disabled aria-label="<?= e(t('Seçili mesajları sil')) ?>" title="<?= e(t('Seçili mesajları sil')) ?>"><?= icon_svg('trash') ?></button>
+                <button class="toolbar-button <?= $path === 'trash.php' ? 'bulk-restore' : 'bulk-delete' ?>" type="submit" data-bulk-delete disabled aria-label="<?= e(t($path === 'trash.php' ? 'Seçili mesajları geri al' : 'Seçili mesajları sil')) ?>" title="<?= e(t($path === 'trash.php' ? 'Seçili mesajları geri al' : 'Seçili mesajları sil')) ?>"><?= icon_svg($path === 'trash.php' ? 'reply' : 'trash') ?></button>
             </form>
         </div>
         <div class="mailbox-title">
@@ -187,6 +187,8 @@ function render_message_list(array $messages, string $box): void
         echo '<label class="checkbox-control row-checkbox"><input type="checkbox" data-row-select data-message-id="' . (int) $message['id'] . '" value="' . (int) $message['id'] . '" aria-label="' . e(t('Mesajı seç')) . '"><span></span></label>';
         if (in_array($box, ['inbox', 'starred'], true)) {
             echo '<form class="row-star" data-star-form action="' . e(url('actions/toggle_star.php')) . '" method="post"><input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '"><input type="hidden" name="message_id" value="' . (int) $message['id'] . '"><input type="hidden" name="return_to" value="' . e($box . '.php') . '"><button class="star-button' . ($message['is_starred'] ? ' is-starred' : '') . '" type="submit" aria-pressed="' . ($message['is_starred'] ? 'true' : 'false') . '" aria-label="' . e(t($message['is_starred'] ? 'Yıldızı kaldır' : 'Yıldızla')) . '">' . icon_svg('star') . '</button></form>';
+        } elseif ($box === 'trash') {
+            echo '<form class="row-star" action="' . e(url('actions/restore_message.php')) . '" method="post"><input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '"><input type="hidden" name="message_id" value="' . (int) $message['id'] . '"><button class="restore-button" type="submit" aria-label="' . e(t('Çöp kutusundan geri al')) . '" title="' . e(t('Çöp kutusundan geri al')) . '">' . icon_svg('reply') . '</button></form>';
         } else {
             echo '<span class="row-star-placeholder">' . icon_svg('star') . '</span>';
         }

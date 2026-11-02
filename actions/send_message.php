@@ -50,10 +50,15 @@ try {
 try {
     // Dosya veya veritabanı işlemi başarısızsa yarım mesaj bırakma.
     db()->beginTransaction();
-    $stmt = db()->prepare('INSERT INTO messages (sender_id, recipient_id, subject, body) VALUES (:sender, :recipient, :subject, :body)');
+    $stmt = db()->prepare('INSERT INTO messages (sender_id, recipient_id, subject, body) VALUES (:sender, :recipient, :subject, :body)' . (uses_postgres() ? ' RETURNING id' : ''));
     $stmt->execute(['sender' => $user['id'], 'recipient' => $recipient['id'], 'subject' => $subject, 'body' => $body]);
-    $messageId = (int) db()->lastInsertId();
-    if ($attachment) {
+    $messageId = (int) (uses_postgres() ? $stmt->fetchColumn() : db()->lastInsertId());
+    if ($attachment && uses_postgres()) {
+        $bytes = file_get_contents($attachment['tmp_name']);
+        if ($bytes === false) throw new RuntimeException('Dosya okunamadı.');
+        $stmt = db()->prepare('INSERT INTO attachments (message_id,original_name,stored_name,mime_type,size_bytes,content_base64) VALUES (?,?,?,?,?,?)');
+        $stmt->execute([$messageId, $attachment['original_name'], $attachment['stored_name'], $attachment['mime_type'], $attachment['size_bytes'], base64_encode($bytes)]);
+    } elseif ($attachment) {
         $directory = attachment_directory();
         if (!is_dir($directory) && !mkdir($directory, 0700, true) && !is_dir($directory)) {
             throw new RuntimeException('Dosya klasörü oluşturulamadı.');
