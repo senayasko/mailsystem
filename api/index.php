@@ -13,7 +13,8 @@ if (getenv('VERCEL')) $_SERVER['HTTPS'] = 'on';
 try {
     require $root . $path;
 } catch (Throwable $error) {
-    error_log('Posta request failed: ' . get_class($error));
+    $detail = preg_replace('/(?:postgres(?:ql)?:\/\/\S+|password[=:]\s*\S+)/i', '[redacted]', $error->getMessage());
+    error_log('Posta request failed: ' . get_class($error) . ' [' . $error->getCode() . '] ' . substr($detail, 0, 500));
     http_response_code(503);
     echo 'Posta geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.';
 }
