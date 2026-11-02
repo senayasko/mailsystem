@@ -22,6 +22,11 @@ function create_connection(): PDO
         $parts = parse_url($connectionUrl);
         if (!$parts || !isset($parts['host'], $parts['user'], $parts['path'])) throw new RuntimeException('Invalid database configuration.');
         $dsn = 'pgsql:host=' . $parts['host'] . ';port=' . ($parts['port'] ?? 5432) . ';dbname=' . ltrim($parts['path'], '/') . ';sslmode=require';
+        // The community PHP runtime ships libpq without TLS SNI support.
+        // Tell Neon's proxy which endpoint to use without changing authentication.
+        if (preg_match('/^(ep-[a-z0-9-]+?)(?:-pooler)?\.[a-z0-9.-]+\.neon\.(?:tech|build)$/i', $parts['host'], $match)) {
+            $dsn .= ";options='endpoint=" . $match[1] . "'";
+        }
         $pdo = new PDO($dsn, rawurldecode($parts['user']), rawurldecode($parts['pass'] ?? ''), $options);
         $pdo->exec('SET search_path TO posta, public');
         return $pdo;
