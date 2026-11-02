@@ -19,7 +19,7 @@ def check(condition, description):
 
 def get(session, path):
     response = session.get(BASE + '/' + path, timeout=15)
-    check(response.status_code == 200, path + ' HTTP 200')
+    check(response.status_code == 200, path + ' HTTP ' + str(response.status_code) + ' (expected 200)')
     check('Fatal error' not in response.text and 'Warning:' not in response.text, path + ' no PHP errors')
     return response
 

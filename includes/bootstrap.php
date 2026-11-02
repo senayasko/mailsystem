@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/database.php';
+date_default_timezone_set('Europe/Istanbul');
 
 // Uygulama htdocs/mailsystem altında veya farklı bir klasör adında çalışabilir.
 $script = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '/mailsystem/index.php');

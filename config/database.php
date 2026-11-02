@@ -29,6 +29,7 @@ function create_connection(): PDO
         }
         $pdo = new PDO($dsn, rawurldecode($parts['user']), rawurldecode($parts['pass'] ?? ''), $options);
         $pdo->exec('SET search_path TO posta, public');
+        $pdo->exec("SET TIME ZONE 'Europe/Istanbul'");
         return $pdo;
     }
     return new PDO('mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASSWORD, $options);
